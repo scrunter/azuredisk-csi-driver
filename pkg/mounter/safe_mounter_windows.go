@@ -246,6 +246,19 @@ func (mounter *CSIProxyMounter) FindDiskByLun(lun string) (diskNum string, err e
 
 // FormatAndMount - accepts the source disk number, target path to mount, the fstype to format with and options to be used.
 func (mounter *CSIProxyMounter) FormatAndMount(source string, target string, fstype string, options []string) error {
+	// Call SetAttachState to make sure the disk is actually online.
+	// In the event of a signature collision (e.g. clone/snapshot). Windows will leave offline.
+	// Bringing online, will signal the OS to create a new signature unless the host is clustered.
+	// In a clustered environment cludisk will intercept and block, and the call will fail.
+	SetAttachStateRequest := &diskv1beta2.SetAttachStateRequest{
+		DiskID: source,
+		IsOnline: true,
+	}
+	_, err := mounter.DiskClient.SetAttachState(context.Background(), SetAttachStateRequest)
+	if err != nil {
+		return err
+	}
+
 	// Call PartitionDisk CSI proxy call to partition the disk and return the volume id
 	partionDiskRequest := &disk.PartitionDiskRequest{
 		DiskID: source,
