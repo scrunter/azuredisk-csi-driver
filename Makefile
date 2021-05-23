@@ -14,7 +14,7 @@
 
 PKG = sigs.k8s.io/azuredisk-csi-driver
 GIT_COMMIT ?= $(shell git rev-parse HEAD)
-REGISTRY ?=  ihcdemoacr
+REGISTRY ?=  ihcdemoacr.azurecr.io
 REGISTRY_NAME ?= $(shell echo $(REGISTRY) | sed "s/.azurecr.io//g")
 DRIVER_NAME = disk.csi.azure.com
 IMAGE_NAME ?= azuredisk-csi
